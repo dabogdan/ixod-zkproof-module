@@ -54,6 +54,7 @@ Instead of submitting sensitive data, users submit a **hash of a zero-knowledge 
 
 ```bash
 make build
+```
 
 My zkProof Module:
 * Accepts MsgSubmitProof transactions
@@ -65,35 +66,38 @@ My zkProof Module:
 ## Procedure: Run blockchain node locally without Docker
 
 # 1. Clear previous state
+```bash
 rm -rf ~/.ixod
-
+```
 # 2. Initialize the chain with chain ID and token denom
+```bash
 ixod init test-node --chain-id=ixo-local --default-denom=uixo
-
+```
 # 3. Create the 'alice' key (test keyring backend is non-persistent, great for dev) 
+```bash
 ixod keys add alice --keyring-backend test
-
+```
 # 4. Add genesis account for Alice with a large balance
+```bash
 ixod genesis add-genesis-account $(ixod keys show alice -a --keyring-backend test) 1000000000000uixo
-
+```
 # 5. Generate gentx for Alice (this sets Alice as a validator)
-ixod genesis gentx alice 500000000000uixo \
-  --chain-id=ixo-local \
-  --amount=500000000000uixo \
-  --keyring-backend=test
-
+```bash
+ixod genesis gentx alice 500000000000uixo --chain-id=ixo-local --amount=500000000000uixo --keyring-backend=test
+```
 # 6. Combine all gentxs (only needed for multi-validator setups, but required)
+```bash
 ixod genesis collect-gentxs
-
+```
 # 7. Start the blockchain node
+```bash
 ixod start
-
+```
 
 # 8. Run tests
-
+```bash
 unit tests: go test ./x/zkproof/test/...
-
-
+```
 
 ## Module use case: 
 I'm verified that I am over 18 years old, but won’t show my ID. The proof is generated offline, some data of it is stored online for everybody to be able to query it.
@@ -101,10 +105,12 @@ I'm verified that I am over 18 years old, but won’t show my ID. The proof is g
 # Command to test xkProof module:
 
 1) SUBMIT PROOF
+```bash
  get balances: ixod query bank balances $(ixod keys show alice -a --keyring-backend test)
+```
 
-(alice should have a balance as per instructions below)
-
+(alice should have a balance as per instructions above)
+```bash
 ixod tx zkproof submit-proof age-verification zk-proof-hash "age>18" \
   --from alice \
   --keyring-backend test \
@@ -114,12 +120,17 @@ ixod tx zkproof submit-proof age-verification zk-proof-hash "age>18" \
   --fees 2000uixo \
   --broadcast-mode sync \
   -y
+```
 
-
-then: ixod query tx <txhash>
+to check the transaction: 
+```bash 
+ixod query tx <txhash>
+```
 
 2) QUERY PROOF
+```bash
 ixod query zkproof proof age-verification --creator $(ixod keys show alice -a --keyring-backend test)
+```
 
 # Module Folder Structure
 
