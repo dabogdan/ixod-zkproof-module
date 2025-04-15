@@ -1,0 +1,289 @@
+syntax = "proto3";
+package ixo.bonds.v1beta1;
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos_proto/cosmos.proto";
+import "ixo/bonds/v1beta1/bonds.proto";
+import "cosmos/msg/v1/msg.proto";
+
+option go_package = "github.com/ixofoundation/ixo-blockchain/v5/x/bonds/types";
+
+// Msg defines the bonds Msg service.
+service Msg {
+  // CreateBond defines a method for creating a bond.
+  rpc CreateBond(MsgCreateBond) returns (MsgCreateBondResponse);
+
+  // EditBond defines a method for editing a bond.
+  rpc EditBond(MsgEditBond) returns (MsgEditBondResponse);
+
+  // SetNextAlpha defines a method for editing a bond's alpha parameter.
+  rpc SetNextAlpha(MsgSetNextAlpha) returns (MsgSetNextAlphaResponse);
+
+  // UpdateBondState defines a method for updating a bond's current state.
+  rpc UpdateBondState(MsgUpdateBondState) returns (MsgUpdateBondStateResponse);
+
+  // Buy defines a method for buying from a bond.
+  rpc Buy(MsgBuy) returns (MsgBuyResponse);
+
+  // Sell defines a method for selling from a bond.
+  rpc Sell(MsgSell) returns (MsgSellResponse);
+
+  // Swap defines a method for swapping from one reserve bond token to another.
+  rpc Swap(MsgSwap) returns (MsgSwapResponse);
+
+  // MakeOutcomePayment defines a method for making an outcome payment to a
+  // bond.
+  rpc MakeOutcomePayment(MsgMakeOutcomePayment)
+      returns (MsgMakeOutcomePaymentResponse);
+
+  // WithdrawShare defines a method for withdrawing a share from a bond that is
+  // in the SETTLE stage.
+  rpc WithdrawShare(MsgWithdrawShare) returns (MsgWithdrawShareResponse);
+
+  // WithdrawReserve defines a method for withdrawing reserve from a bond.
+  rpc WithdrawReserve(MsgWithdrawReserve) returns (MsgWithdrawReserveResponse);
+}
+
+// MsgCreateBond defines a message for creating a new bond.
+message MsgCreateBond {
+  option (cosmos.msg.v1.signer) = "creator_address";
+
+  string bond_did = 1;
+  string token = 2;
+  string name = 3;
+  string description = 4;
+  string function_type = 5;
+  repeated ixo.bonds.v1beta1.FunctionParam function_parameters = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "FunctionParams"
+  ];
+  string creator_did = 7 [
+    (gogoproto.casttype) =
+        "github.com/ixofoundation/ixo-blockchain/v5/x/iid/types.DIDFragment"
+  ];
+  string controller_did = 8 [
+    (gogoproto.casttype) =
+        "github.com/ixofoundation/ixo-blockchain/v5/x/iid/types.DIDFragment"
+  ];
+  string oracle_did = 9 [
+    (gogoproto.casttype) =
+        "github.com/ixofoundation/ixo-blockchain/v5/x/iid/types.DIDFragment"
+  ];
+  repeated string reserve_tokens = 10;
+  string tx_fee_percentage = 11 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  string exit_fee_percentage = 12 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  string fee_address = 13;
+  string reserve_withdrawal_address = 14;
+  cosmos.base.v1beta1.Coin max_supply = 15 [ (gogoproto.nullable) = false ];
+  repeated cosmos.base.v1beta1.Coin order_quantity_limits = 16 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  string sanity_rate = 17 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  string sanity_margin_percentage = 18 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  bool allow_sells = 19;
+  bool allow_reserve_withdrawals = 20;
+  bool alpha_bond = 21;
+  string batch_blocks = 22 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false
+  ];
+  string outcome_payment = 23 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string creator_address = 24;
+}
+
+// MsgCreateBondResponse defines the Msg/CreateBond response type.
+message MsgCreateBondResponse {}
+
+// MsgEditBond defines a message for editing an existing bond.
+message MsgEditBond {
+  option (cosmos.msg.v1.signer) = "editor_address";
+
+  string bond_did = 1;
+  string name = 2;
+  string description = 3;
+  string order_quantity_limits = 4;
+  string sanity_rate = 5;
+  string sanity_margin_percentage = 6;
+  string editor_did = 7 [
+    (gogoproto.casttype) =
+        "github.com/ixofoundation/ixo-blockchain/v5/x/iid/types.DIDFragment"
+  ];
+  string editor_address = 8;
+}
+
+// MsgEditBondResponse defines the Msg/EditBond response type.
+message MsgEditBondResponse {}
+
+// MsgSetNextAlpha defines a message for editing a bond's alpha parameter.
+message MsgSetNextAlpha {
+  option (cosmos.msg.v1.signer) = "oracle_address";
+
+  string bond_did = 1;
+  string alpha = 2 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  string delta = 3 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = true
+  ];
+  string oracle_did = 4 [
+    (gogoproto.casttype) =
+        "github.com/ixofoundation/ixo-blockchain/v5/x/iid/types.DIDFragment"
+  ];
+  string oracle_address = 5;
+}
+
+message MsgSetNextAlphaResponse {}
+
+// MsgUpdateBondState defines a message for updating a bond's current state.
+message MsgUpdateBondState {
+  option (cosmos.msg.v1.signer) = "editor_address";
+
+  string bond_did = 1;
+  string state = 2;
+  string editor_did = 3 [
+    (gogoproto.casttype) =
+        "github.com/ixofoundation/ixo-blockchain/v5/x/iid/types.DIDFragment"
+  ];
+  string editor_address = 4;
+}
+
+// MsgUpdateBondStateResponse defines the Msg/UpdateBondState response type.
+message MsgUpdateBondStateResponse {}
+
+// MsgBuy defines a message for buying from a bond.
+message MsgBuy {
+  option (cosmos.msg.v1.signer) = "buyer_address";
+
+  string buyer_did = 1 [
+    (gogoproto.casttype) =
+        "github.com/ixofoundation/ixo-blockchain/v5/x/iid/types.DIDFragment"
+  ];
+  cosmos.base.v1beta1.Coin amount = 2 [ (gogoproto.nullable) = false ];
+  repeated cosmos.base.v1beta1.Coin max_prices = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  string bond_did = 4;
+  string buyer_address = 5 [ (gogoproto.jsontag) = "buyer_address" ];
+}
+
+// MsgBuyResponse defines the Msg/Buy response type.
+message MsgBuyResponse {}
+
+// MsgSell defines a message for selling from a bond.
+message MsgSell {
+  option (cosmos.msg.v1.signer) = "seller_address";
+
+  string seller_did = 1 [
+    (gogoproto.casttype) =
+        "github.com/ixofoundation/ixo-blockchain/v5/x/iid/types.DIDFragment"
+  ];
+  cosmos.base.v1beta1.Coin amount = 2 [ (gogoproto.nullable) = false ];
+  string bond_did = 3;
+  string seller_address = 4;
+}
+
+// MsgSellResponse defines the Msg/Sell response type.
+message MsgSellResponse {}
+
+// MsgSwap defines a message for swapping from one reserve bond token to
+// another.
+message MsgSwap {
+  option (cosmos.msg.v1.signer) = "swapper_address";
+
+  string swapper_did = 1 [
+    (gogoproto.casttype) =
+        "github.com/ixofoundation/ixo-blockchain/v5/x/iid/types.DIDFragment"
+  ];
+  string bond_did = 2;
+  cosmos.base.v1beta1.Coin from = 3 [ (gogoproto.nullable) = false ];
+  string to_token = 4;
+  string swapper_address = 5;
+}
+
+// MsgSwapResponse defines the Msg/Swap response type.
+message MsgSwapResponse {}
+
+// MsgMakeOutcomePayment defines a message for making an outcome payment to a
+// bond.
+message MsgMakeOutcomePayment {
+  option (cosmos.msg.v1.signer) = "sender_address";
+
+  string sender_did = 1 [
+    (gogoproto.casttype) =
+        "github.com/ixofoundation/ixo-blockchain/v5/x/iid/types.DIDFragment"
+  ];
+  string amount = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string bond_did = 3;
+  string sender_address = 4;
+}
+
+// MsgMakeOutcomePaymentResponse defines the Msg/MakeOutcomePayment response
+// type.
+message MsgMakeOutcomePaymentResponse {}
+
+// MsgWithdrawShare defines a message for withdrawing a share from a bond that
+// is in the SETTLE stage.
+message MsgWithdrawShare {
+  option (cosmos.msg.v1.signer) = "recipient_address";
+
+  string recipient_did = 1 [
+    (gogoproto.casttype) =
+        "github.com/ixofoundation/ixo-blockchain/v5/x/iid/types.DIDFragment"
+  ];
+  string bond_did = 2;
+  string recipient_address = 3;
+}
+
+// MsgWithdrawShareResponse defines the Msg/WithdrawShare response type.
+message MsgWithdrawShareResponse {}
+
+// MsgWithdrawReserve defines a message for withdrawing reserve from a bond.
+message MsgWithdrawReserve {
+  option (cosmos.msg.v1.signer) = "withdrawer_address";
+
+  string withdrawer_did = 1 [
+    (gogoproto.casttype) =
+        "github.com/ixofoundation/ixo-blockchain/v5/x/iid/types.DIDFragment"
+  ];
+  repeated cosmos.base.v1beta1.Coin amount = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  string bond_did = 3;
+  string withdrawer_address = 4;
+}
+
+// MsgWithdrawReserveResponse defines the Msg/WithdrawReserve response type.
+message MsgWithdrawReserveResponse {}

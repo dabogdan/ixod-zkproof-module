@@ -1,0 +1,97 @@
+run:
+  tests: false
+  timeout: 30s # timeout for analysis, e.g. 30s, 5m, default is 1m
+
+linters:
+  disable-all: true
+  # Enable specific linter
+  # https://golangci-lint.run/usage/linters/#enabled-by-default-linters
+  enable:
+    - asciicheck
+    - bidichk
+    - durationcheck
+    - errcheck
+    - errname
+    - exportloopref
+    - forcetypeassert
+    - goconst
+    - gofmt
+    - goimports
+    - goheader
+    - goprintffuncname
+    - gosimple
+    - govet
+    - importas
+    - ineffassign
+    - makezero
+    - misspell
+    - nakedret
+    - nilnil
+    - promlinter
+    - staticcheck
+    - stylecheck
+    - tenv
+    - thelper
+    - tparallel
+    - typecheck
+    - thelper
+    - unconvert
+    - unused
+    - whitespace
+    - unparam
+    - revive
+
+linters-settings:
+  revive:
+    ignore-generated-header: true
+    severity: warning
+    rules:
+      - name: unused-parameter
+        disabled: true
+      - name: blank-imports
+      - name: context-as-argument
+      - name: context-keys-type
+      - name: dot-imports
+      - name: error-return
+      - name: error-strings
+      - name: error-naming
+      - name: exported
+      - name: if-return
+      - name: increment-decrement
+      - name: var-naming
+      - name: var-declaration
+      - name: range
+      - name: receiver-naming
+      - name: time-naming
+      - name: unexported-return
+      - name: indent-error-flow
+      - name: errorf
+      - name: empty-block
+      - name: superfluous-else
+      - name: unreachable-code
+      - name: redefines-builtin-id
+
+issues:
+  exclude-rules:
+    - linters:
+        - staticcheck
+      text: "SA1024: cutset contains duplicate characters" # proved to not provide much value, only false positives.
+    - linters:
+        - staticcheck
+      text: "SA9004: only the first constant in this group has an explicit type" # explicitly recommended in go syntax
+    - linters:
+        - stylecheck
+      text: "ST1003:" # requires identifiers with "id" to be "ID".
+    - linters:
+        - stylecheck
+      text: "ST1005:" # punctuation in error messages
+
+  max-issues-per-linter: 10000
+  max-same-issues: 10000
+
+  # Enables the use of custom exclude directories and files.
+  exclude-dirs-use-default: true
+  # Exclude files with the extension ".pb.gw.go"
+  exclude-files:
+    - '.*\.pb\.gw\.go$'
+    - "node_modules/**"

@@ -1,0 +1,14 @@
+syntax = "proto3";
+package ixo.bonds.v1beta1;
+
+import "gogoproto/gogo.proto";
+import "ixo/bonds/v1beta1/bonds.proto";
+
+option go_package = "github.com/ixofoundation/ixo-blockchain/v5/x/bonds/types";
+
+// GenesisState defines the bonds module's genesis state.
+message GenesisState {
+  repeated ixo.bonds.v1beta1.Bond bonds = 1 [ (gogoproto.nullable) = false ];
+  repeated ixo.bonds.v1beta1.Batch batches = 2 [ (gogoproto.nullable) = false ];
+  ixo.bonds.v1beta1.Params params = 3 [ (gogoproto.nullable) = false ];
+}

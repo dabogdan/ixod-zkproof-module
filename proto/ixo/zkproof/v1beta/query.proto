@@ -1,0 +1,23 @@
+syntax = "proto3";
+package ixo.zkproof.v1beta;
+
+option go_package = "github.com/ixofoundation/ixo-blockchain/v5/x/zkproof/types";
+
+import "gogoproto/gogo.proto";
+
+// gRPC query service for zkproof
+service Query {
+  rpc Proof(QueryProofRequest) returns (QueryProofResponse);
+}
+
+message QueryProofRequest {
+  string creator = 1;
+  string claim_type = 2;
+}
+
+message QueryProofResponse {
+  string creator = 1;
+  string claim_type = 2;
+  string proof_data = 3;
+  string public_input = 4;
+}

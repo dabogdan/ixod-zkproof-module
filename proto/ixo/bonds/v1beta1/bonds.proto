@@ -1,0 +1,179 @@
+syntax = "proto3";
+package ixo.bonds.v1beta1;
+
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+import "cosmos/base/v1beta1/coin.proto";
+
+option go_package = "github.com/ixofoundation/ixo-blockchain/v5/x/bonds/types";
+
+// FunctionParam is a key-value pair used for specifying a specific bond
+// parameter.
+message FunctionParam {
+  string param = 1;
+  string value = 2 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// BondDetails contains details about the current state of a given bond.
+message BondDetails {
+  string bond_did = 1;
+  repeated cosmos.base.v1beta1.DecCoin spot_price = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
+  ];
+  cosmos.base.v1beta1.Coin supply = 3 [ (gogoproto.nullable) = false ];
+  repeated cosmos.base.v1beta1.Coin reserve = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+}
+
+// Bond defines a token bonding curve type with all of its parameters.
+message Bond {
+  string token = 1;
+  string name = 2;
+  string description = 3;
+  string creator_did = 4 [
+    (gogoproto.casttype) =
+        "github.com/ixofoundation/ixo-blockchain/v5/x/iid/types.DIDFragment"
+  ];
+  string controller_did = 5 [
+    (gogoproto.casttype) =
+        "github.com/ixofoundation/ixo-blockchain/v5/x/iid/types.DIDFragment"
+  ];
+  string function_type = 6;
+  repeated FunctionParam function_parameters = 7 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "FunctionParams"
+  ];
+  repeated string reserve_tokens = 8;
+  string tx_fee_percentage = 9 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  string exit_fee_percentage = 10 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  string fee_address = 11;
+  string reserve_withdrawal_address = 12;
+  cosmos.base.v1beta1.Coin max_supply = 13 [ (gogoproto.nullable) = false ];
+  repeated cosmos.base.v1beta1.Coin order_quantity_limits = 14 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  string sanity_rate = 15 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  string sanity_margin_percentage = 16 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  cosmos.base.v1beta1.Coin current_supply = 17 [ (gogoproto.nullable) = false ];
+  repeated cosmos.base.v1beta1.Coin current_reserve = 18 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  repeated cosmos.base.v1beta1.Coin available_reserve = 19 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  repeated cosmos.base.v1beta1.Coin current_outcome_payment_reserve = 20 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  bool allow_sells = 21;
+  bool allow_reserve_withdrawals = 22;
+  bool alpha_bond = 23;
+  string batch_blocks = 24 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false
+  ];
+  string outcome_payment = 25 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string state = 26;
+  string bond_did = 27;
+  string oracle_did = 28 [
+    (gogoproto.casttype) =
+        "github.com/ixofoundation/ixo-blockchain/v5/x/iid/types.DIDFragment"
+  ];
+}
+
+// BaseOrder defines a base order type. It contains all the necessary fields for
+// specifying the general details about a buy, sell, or swap order.
+message BaseOrder {
+  string account_did = 1 [
+    (gogoproto.casttype) =
+        "github.com/ixofoundation/ixo-blockchain/v5/x/iid/types.DIDFragment"
+  ];
+  cosmos.base.v1beta1.Coin amount = 2 [ (gogoproto.nullable) = false ];
+  bool cancelled = 3;
+  string cancel_reason = 4;
+}
+
+// BuyOrder defines a type for submitting a buy order on a bond, together with
+// the maximum amount of reserve tokens the buyer is willing to pay.
+message BuyOrder {
+  BaseOrder base_order = 1 [ (gogoproto.nullable) = false ];
+  repeated cosmos.base.v1beta1.Coin max_prices = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+}
+
+// SellOrder defines a type for submitting a sell order on a bond.
+message SellOrder { BaseOrder base_order = 1 [ (gogoproto.nullable) = false ]; }
+
+// SwapOrder defines a type for submitting a swap order between two tokens on a
+// bond.
+message SwapOrder {
+  BaseOrder base_order = 1 [ (gogoproto.nullable) = false ];
+  string to_token = 2;
+}
+
+// Batch holds a collection of outstanding buy, sell, and swap orders on a
+// particular bond.
+message Batch {
+  string bond_did = 1;
+  string blocks_remaining = 2 [
+    (cosmos_proto.scalar) = "cosmos.Uint",
+    (gogoproto.customtype) = "cosmossdk.io/math.Uint",
+    (gogoproto.nullable) = false
+  ];
+  string next_public_alpha = 3 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  cosmos.base.v1beta1.Coin total_buy_amount = 4
+      [ (gogoproto.nullable) = false ];
+  cosmos.base.v1beta1.Coin total_sell_amount = 5
+      [ (gogoproto.nullable) = false ];
+  repeated cosmos.base.v1beta1.DecCoin buy_prices = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
+  ];
+  repeated cosmos.base.v1beta1.DecCoin sell_prices = 7 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.DecCoins"
+  ];
+  repeated BuyOrder buys = 8 [ (gogoproto.nullable) = false ];
+  repeated SellOrder sells = 9 [ (gogoproto.nullable) = false ];
+  repeated SwapOrder swaps = 10 [ (gogoproto.nullable) = false ];
+}
+
+// Params defines the parameters for the bonds module.
+message Params { repeated string reserved_bond_tokens = 1; }
